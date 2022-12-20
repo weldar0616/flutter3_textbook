@@ -1,49 +1,74 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(new MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'Generated App',
-      theme: new ThemeData(
+      theme: ThemeData(
         primarySwatch: Colors.blue,
-        primaryColor: const Color(0xFF2196f3),
-        accentColor: const Color(0xFF2196f3),
-        canvasColor: const Color(0xFFfafafa),
+        primaryColor: const Color(0xff2196f3),
+        canvasColor: const Color(0xfffafafa),
       ),
-      home: new MyHomePage(),
+      home: MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key}) : super(key: key);
+
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  static const List<Tab> tabs = <Tab>[
+    Tab(text: 'One'),
+    Tab(text: 'Two'),
+    Tab(text: 'Three')
+  ];
+
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: tabs.length, vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('App Name'),
-      ),
-      body: new Container(
-        child: new Text(
-          "qWerty1",
-          style: new TextStyle(
-              fontSize: 12.0,
-              color: const Color(0xFF000000),
-              fontWeight: FontWeight.w200,
-              fontFamily: "Roboto"),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('My App'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: tabs,
         ),
-        padding: const EdgeInsets.all(0.0),
-        alignment: Alignment.bottomRight,
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: tabs.map((Tab tab) {
+          return createTab(tab);
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget createTab(Tab tab) {
+    return Center(
+      child: Text(
+        ('This is "${tab.text}" Tab.'),
+        style: const TextStyle(
+          fontSize: 32.0,
+          color: Colors.blue,
+        ),
       ),
     );
   }
