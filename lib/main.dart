@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 void main() {
   runApp(MyApp());
@@ -26,62 +29,57 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
-  static const List<Tab> tabs = <Tab>[
-    Tab(
-      text: 'One',
-      icon: Icon(Icons.star),
-    ),
-    Tab(
-      text: 'Two',
-      icon: Icon(Icons.info),
-    ),
-    Tab(
-      text: 'Three',
-      icon: Icon(Icons.home),
-    ),
-  ];
+class _MyHomePageState extends State<MyHomePage> {
+  static ui.Image? _img = null;
+  static bool _flg = false;
 
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: tabs.length, vsync: this);
+  Future<void> loadAssetImage(String fname) async {
+    final bd = await rootBundle.load("assets/images/$fname");
+    final Uint8List u8lst = await Uint8List.view(bd.buffer);
+    final codec = await ui.instantiateImageCodec(u8lst);
+    final frameInfo = await codec.getNextFrame();
+    _img = frameInfo.image;
+    setState(() {
+      _flg = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    loadAssetImage('image.jpg');
+
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        title: Text('My App'),
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.blue,
-        child: TabBar(
-          controller: _tabController,
-          tabs: tabs,
+        title: Text(
+          'App Name',
+          style: TextStyle(fontSize: 30.0),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: tabs.map((Tab tab) {
-          return createTab(tab);
-        }).toList(),
+      body: Container(
+        child: CustomPaint(
+          painter: MyPainter(_img),
+        ),
       ),
     );
+  }
+}
+
+class MyPainter extends CustomPainter {
+  ui.Image? _img = null;
+
+  MyPainter(this._img);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint p = Paint();
+
+    Offset off = Offset(50.0, 50.0);
+    if (_img != null) {
+      canvas.drawImage(_img!, off, p);
+    }
   }
 
-  Widget createTab(Tab tab) {
-    return Center(
-      child: Text(
-        ('This is "${tab.text}" Tab.'),
-        style: const TextStyle(
-          fontSize: 32.0,
-          color: Colors.blue,
-        ),
-      ),
-    );
-  }
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
